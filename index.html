@@ -1,0 +1,640 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+  <title>TrustPay – Gig Worker Fintech | Interactive Prototype</title>
+  <!-- Google Fonts: Inter + Poppins -->
+  <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,300;14..32,400;14..32,500;14..32,600;14..32,700;14..32,800&family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <!-- Font Awesome 6 (free icons) -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    /* GLOBAL - works on any frame, fully responsive */
+    body {
+      min-height: 100vh;
+      background: radial-gradient(circle at 20% 30%, #0B1120, #030712);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      font-family: 'Inter', 'Poppins', sans-serif;
+      padding: 24px;
+    }
+
+    /* Phone mockup that scales gracefully — responsive, but looks like a real device */
+    .phone-mock {
+      width: 100%;
+      max-width: 380px;
+      height: 700px;
+      background: #FFFFFF;
+      border-radius: 48px;
+      box-shadow: 0 35px 60px rgba(0, 0, 0, 0.5), 0 0 0 8px rgba(255, 255, 255, 0.1), 0 0 0 12px rgba(0, 0, 0, 0.2);
+      overflow: hidden;
+      position: relative;
+      transition: transform 0.2s ease, box-shadow 0.2s;
+    }
+
+    .phone-mock:hover {
+      transform: scale(1.01);
+      box-shadow: 0 40px 70px rgba(0, 0, 0, 0.6), 0 0 0 8px rgba(255, 255, 255, 0.15);
+    }
+
+    /* Scrollable container */
+    .screen-container {
+      width: 100%;
+      height: 100%;
+      position: relative;
+      background: #F8FAFE;
+      overflow-y: auto;
+      overflow-x: hidden;
+      scroll-behavior: smooth;
+    }
+
+    /* Custom scrollbar (clean) */
+    .screen-container::-webkit-scrollbar {
+      width: 4px;
+    }
+    .screen-container::-webkit-scrollbar-track {
+      background: #E2E8F0;
+      border-radius: 10px;
+    }
+    .screen-container::-webkit-scrollbar-thumb {
+      background: #2563EB;
+      border-radius: 10px;
+    }
+
+    /* Base screen styling */
+    .screen {
+      width: 100%;
+      min-height: 100%;
+      padding: 24px 20px 30px 20px;
+      background: #F8FAFE;
+      display: none;
+      transition: opacity 0.25s ease;
+    }
+
+    .screen.active {
+      display: block;
+      animation: fadeSlideUp 0.35s cubic-bezier(0.2, 0.9, 0.4, 1.1);
+    }
+
+    @keyframes fadeSlideUp {
+      0% {
+        opacity: 0;
+        transform: translateY(12px);
+      }
+      100% {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    /* Glassmorphism + soft neumorphic cards */
+    .card {
+      background: rgba(255, 255, 255, 0.96);
+      backdrop-filter: blur(2px);
+      border-radius: 28px;
+      box-shadow: 0 10px 20px -5px rgba(0, 0, 0, 0.05), 0 0 0 1px rgba(0, 0, 0, 0.02), 0 8px 18px rgba(0, 0, 0, 0.03);
+      padding: 20px;
+      margin-bottom: 20px;
+      transition: all 0.2s;
+    }
+
+    /* Buttons + micro-interactions */
+    .btn {
+      background: #2563EB;
+      border: none;
+      padding: 14px 0;
+      width: 100%;
+      border-radius: 44px;
+      font-weight: 600;
+      font-size: 16px;
+      font-family: 'Inter', sans-serif;
+      color: white;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      cursor: pointer;
+      transition: all 0.15s ease;
+      box-shadow: 0 6px 12px rgba(37, 99, 235, 0.25);
+    }
+
+    .btn:active {
+      transform: scale(0.97);
+      box-shadow: 0 2px 6px rgba(37, 99, 235, 0.3);
+    }
+
+    .btn-outline {
+      background: transparent;
+      border: 1px solid #CBD5E1;
+      color: #1E293B;
+      box-shadow: none;
+    }
+
+    .btn-outline:active {
+      background: #F1F5F9;
+      transform: scale(0.97);
+    }
+
+    /* Bottom navigation */
+    .bottom-nav {
+      position: absolute;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      background: rgba(255, 255, 255, 0.96);
+      backdrop-filter: blur(16px);
+      display: flex;
+      justify-content: space-around;
+      padding: 10px 24px 22px;
+      border-top: 1px solid rgba(0, 0, 0, 0.05);
+      box-shadow: 0 -4px 12px rgba(0, 0, 0, 0.02);
+    }
+
+    .nav-item {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 4px;
+      font-size: 12px;
+      font-weight: 500;
+      color: #64748B;
+      transition: 0.1s;
+      cursor: pointer;
+    }
+
+    .nav-item i {
+      font-size: 22px;
+    }
+
+    .nav-item.active {
+      color: #2563EB;
+    }
+
+    /* Trust score circular progress */
+    .circular-progress {
+      width: 160px;
+      height: 160px;
+      border-radius: 50%;
+      background: conic-gradient(#2563EB 0deg 280.8deg, #E2E8F0 280.8deg 360deg);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin: 0 auto 20px;
+    }
+    .progress-inner {
+      width: 130px;
+      height: 130px;
+      background: white;
+      border-radius: 50%;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      font-weight: 800;
+      font-size: 34px;
+      color: #0F172A;
+      box-shadow: inset 0 2px 6px rgba(0,0,0,0.02), 0 8px 16px rgba(0,0,0,0.05);
+    }
+    .progress-inner span {
+      font-size: 14px;
+      font-weight: 500;
+      color: #475569;
+    }
+
+    .factor-item {
+      display: flex;
+      justify-content: space-between;
+      padding: 12px 0;
+      border-bottom: 1px solid #EFF3F8;
+      font-weight: 500;
+    }
+    .green-badge {
+      color: #22C55E;
+      font-weight: 600;
+    }
+
+    /* Insurance shield */
+    .shield-icon {
+      background: #EFF6FF;
+      width: 84px;
+      height: 84px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin: 0 auto 16px;
+      font-size: 46px;
+      color: #22C55E;
+      box-shadow: 0 8px 20px rgba(34,197,94,0.2);
+    }
+
+    /* Alert card */
+    .alert-card {
+      background: #FEF2F2;
+      border-left: 5px solid #EF4444;
+      border-radius: 28px;
+      padding: 20px;
+    }
+
+    /* Dashboard metrics */
+    .metrics-row {
+      display: flex;
+      gap: 12px;
+      margin: 16px 0;
+    }
+    .metric-card {
+      flex: 1;
+      background: white;
+      border-radius: 24px;
+      padding: 14px 6px;
+      text-align: center;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.02);
+    }
+    .metric-value {
+      font-size: 22px;
+      font-weight: 800;
+      color: #0F172A;
+    }
+
+    .greeting {
+      font-size: 24px;
+      font-weight: 700;
+      margin-bottom: 6px;
+    }
+    .text-center { text-align: center; }
+    .text-small { font-size: 13px; color: #475569; }
+    .flex-between { display: flex; justify-content: space-between; align-items: center; }
+    .mt-2 { margin-top: 8px; }
+    .mt-4 { margin-top: 16px; }
+    .mb-2 { margin-bottom: 8px; }
+
+    .input-field {
+      background: #F1F5F9;
+      border: 1px solid #E2E8F0;
+      border-radius: 60px;
+      padding: 14px 18px;
+      width: 100%;
+      font-size: 16px;
+      font-family: 'Inter', sans-serif;
+      margin-bottom: 24px;
+      transition: 0.2s;
+    }
+    .input-field:focus {
+      outline: none;
+      border-color: #2563EB;
+      box-shadow: 0 0 0 3px rgba(37,99,235,0.2);
+    }
+
+    .logo-shield {
+      display: flex;
+      justify-content: center;
+      margin-bottom: 24px;
+    }
+    .shield-t {
+      background: #2563EB10;
+      backdrop-filter: blur(4px);
+      width: 74px;
+      height: 74px;
+      border-radius: 32px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 40px;
+      font-weight: 800;
+      color: #2563EB;
+      box-shadow: 0 8px 18px rgba(0,0,0,0.04);
+    }
+    button, .nav-item {
+      cursor: pointer;
+    }
+  </style>
+</head>
+<body>
+<div class="phone-mock">
+  <div class="screen-container" id="appContainer">
+    <!-- 1️⃣ LOGIN SCREEN -->
+    <div id="loginScreen" class="screen active">
+      <div class="logo-shield">
+        <div class="shield-t"><i class="fas fa-shield-alt" style="font-size: 40px; color:#2563EB;"></i><span style="margin-left: -10px; font-weight:800;">T</span></div>
+      </div>
+      <div class="text-center">
+        <h1 style="font-size: 32px; letter-spacing: -0.3px;">TrustPay</h1>
+        <p style="color: #334155; margin-top: 8px;">Secure financial access for gig workers</p>
+      </div>
+      <div class="card" style="margin-top: 32px;">
+        <input type="tel" class="input-field" placeholder="📱 Phone number" value="+91 98765 43210">
+        <button id="loginBtn" class="btn"><i class="fas fa-briefcase"></i> Login with Employer</button>
+      </div>
+      <p class="text-center text-small" style="margin-top: 20px;">🔐 Protected by gig worker-first security</p>
+    </div>
+
+    <!-- 2️⃣ DASHBOARD -->
+    <div id="dashboardScreen" class="screen">
+      <div class="flex-between">
+        <div class="greeting">Good Morning,<br>Rohan</div>
+        <div style="background:#EFF6FF; width:48px; height:48px; border-radius:30px; display:flex; align-items:center; justify-content:center;"><i class="fas fa-user-astronaut" style="font-size:24px; color:#2563EB;"></i></div>
+      </div>
+      <div class="metrics-row">
+        <div class="metric-card"><div class="metric-value">₹500</div><div class="text-small">Earnings</div></div>
+        <div class="metric-card"><div class="metric-value">₹10</div><div class="text-small">Auto Deduction</div></div>
+        <div class="metric-card"><div class="metric-value">₹1,200</div><div class="text-small">Savings</div></div>
+      </div>
+      <button id="viewTrustScoreBtn" class="btn" style="background: #0F172A; margin-bottom: 16px;"><i class="fas fa-chart-line"></i> View Trust Score</button>
+      
+      <div class="card">
+        <div class="flex-between"><span style="font-weight:600;">⚡ Quick Access</span><i class="fas fa-arrow-right"></i></div>
+        <div style="margin-top: 16px; display:flex; gap:12px;">
+          <div style="background:#F1F5F9; border-radius: 20px; padding:10px; text-align:center; flex:1"><i class="fas fa-wallet"></i> <div class="text-small">Wallet</div></div>
+          <div style="background:#F1F5F9; border-radius: 20px; padding:10px; text-align:center; flex:1"><i class="fas fa-umbrella"></i> <div class="text-small">Insurance</div></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 3️⃣ TRUST SCORE -->
+    <div id="trustScreen" class="screen">
+      <h2 style="margin-bottom: 6px;">Trust Score</h2>
+      <p class="text-small" style="margin-bottom: 24px;">Based on work consistency & reliability</p>
+      <div class="circular-progress" id="progressCircle">
+        <div class="progress-inner">78<span>/100</span></div>
+      </div>
+      <div class="card">
+        <div class="factor-item"><span>📆 Work consistency</span><span class="green-badge"><i class="fas fa-check-circle"></i> 94%</span></div>
+        <div class="factor-item"><span>⏱️ Active hours</span><span class="green-badge"><i class="fas fa-check-circle"></i> 82%</span></div>
+        <div class="factor-item"><span>💳 Payment history</span><span class="green-badge"><i class="fas fa-check-circle"></i> 100%</span></div>
+      </div>
+      <button id="viewInsuranceFromTrustBtn" class="btn"><i class="fas fa-shield-alt"></i> View Insurance</button>
+    </div>
+
+    <!-- 4️⃣ INSURANCE -->
+    <div id="insuranceScreen" class="screen">
+      <div class="shield-icon"><i class="fas fa-shield-alt"></i></div>
+      <div class="text-center"><span style="background:#22C55E20; padding:6px 18px; border-radius:40px; font-weight:600; color:#15803d;"><i class="fas fa-check-circle"></i> Insurance Active</span></div>
+      <div class="card" style="margin-top: 20px;">
+        <div class="flex-between"><span>Coverage Amount</span><strong style="font-size: 20px;">₹2,00,000</strong></div>
+        <div class="flex-between mt-4"><span>Active during work hours</span><i class="fas fa-clock" style="color:#2563EB;"></i></div>
+        <div class="text-small" style="margin-top: 12px;">✅ Accident cover • Hospital cash • Disability</div>
+      </div>
+      <button id="simulateAccidentBtn" class="btn" style="background:#EF4444;"><i class="fas fa-car-crash"></i> Simulate Accident</button>
+    </div>
+
+    <!-- 5️⃣ ACCIDENT ALERT -->
+    <div id="accidentScreen" class="screen">
+      <div class="alert-card">
+        <div class="flex-between"><i class="fas fa-exclamation-triangle" style="font-size: 28px; color:#EF4444;"></i><span style="background:#EF4444; color:white; padding:4px 12px; border-radius:40px;">EMERGENCY</span></div>
+        <h2 style="margin: 12px 0 4px;">Accident Detected!</h2>
+        <p><i class="fas fa-map-marker-alt"></i> GPS: 28.6139° N, 77.2090° E (Work zone)</p>
+        <p><i class="fas fa-heartbeat"></i> No movement detected • SOS ready</p>
+      </div>
+      <div class="card" style="margin-top: 16px;">
+        <p class="text-center">🚑 Emergency contacts notified. <br> TrustPay will fast-track claim.</p>
+      </div>
+      <button id="checkLoanEligibilityBtn" class="btn"><i class="fas fa-rupee-sign"></i> Check Loan Eligibility</button>
+    </div>
+
+    <!-- 6️⃣ LOAN SCREEN -->
+    <div id="loanScreen" class="screen">
+      <div class="text-center">
+        <div style="background:#EFF6FF; width:80px; height:80px; border-radius:60px; margin:0 auto 20px; display:flex; align-items:center; justify-content:center;"><i class="fas fa-wallet" style="font-size:44px; color:#2563EB;"></i></div>
+        <h2>You're eligible for <span style="color:#2563EB;">₹5,000</span></h2>
+        <p class="text-small">Instant credit based on Trust Score & gig record</p>
+      </div>
+      <div class="card" style="text-align:center;">
+        <p>✅ No collateral | 0% processing fee | Repay flexibly</p>
+      </div>
+      <button id="applyLoanBtn" class="btn"><i class="fas fa-check"></i> Apply Now</button>
+      <button id="backToDashboardFromLoanBtn" class="btn btn-outline" style="margin-top: 12px;"><i class="fas fa-arrow-left"></i> Back to Dashboard</button>
+    </div>
+
+    <!-- Bottom Navigation (hidden on login, appears after) -->
+    <div id="bottomNav" style="display: none;" class="bottom-nav">
+      <div class="nav-item" data-nav="home"><i class="fas fa-home"></i><span>Home</span></div>
+      <div class="nav-item" data-nav="wallet"><i class="fas fa-wallet"></i><span>Wallet</span></div>
+      <div class="nav-item" data-nav="insurance"><i class="fas fa-umbrella"></i><span>Insurance</span></div>
+    </div>
+  </div>
+</div>
+
+<script>
+  // Screen elements
+  const screens = {
+    login: document.getElementById('loginScreen'),
+    dashboard: document.getElementById('dashboardScreen'),
+    trust: document.getElementById('trustScreen'),
+    insurance: document.getElementById('insuranceScreen'),
+    accident: document.getElementById('accidentScreen'),
+    loan: document.getElementById('loanScreen')
+  };
+  const bottomNav = document.getElementById('bottomNav');
+  let currentScreen = 'login';
+
+  // Core navigation with smooth transitions & micro click effect
+  function transitionTo(newScreenId) {
+    if (currentScreen === newScreenId) return;
+    // hide all screens
+    Object.values(screens).forEach(s => s.classList.remove('active'));
+    screens[newScreenId].classList.add('active');
+    currentScreen = newScreenId;
+    
+    // Bottom nav visibility logic
+    if (newScreenId === 'login') {
+      bottomNav.style.display = 'none';
+    } else {
+      bottomNav.style.display = 'flex';
+      updateNavActiveState(newScreenId);
+    }
+    
+    // subtle container animation: soft bump
+    const container = document.querySelector('.screen-container');
+    container.style.transform = 'scale(0.99)';
+    setTimeout(() => { container.style.transform = ''; }, 130);
+  }
+
+  function updateNavActiveState(screenId) {
+    const navItems = document.querySelectorAll('.nav-item');
+    navItems.forEach(item => item.classList.remove('active'));
+    if (screenId === 'dashboard') {
+      document.querySelector('.nav-item[data-nav="home"]')?.classList.add('active');
+    } else if (screenId === 'insurance') {
+      document.querySelector('.nav-item[data-nav="insurance"]')?.classList.add('active');
+    }
+    // for wallet, keep no active style or we can add but not necessary
+  }
+
+  // helper for button effect + transition
+  function attachTransition(btnElement, targetScreen) {
+    if (!btnElement) return;
+    btnElement.addEventListener('click', (e) => {
+      e.preventDefault();
+      btnElement.style.transform = 'scale(0.96)';
+      setTimeout(() => { if(btnElement) btnElement.style.transform = ''; }, 120);
+      transitionTo(targetScreen);
+    });
+  }
+
+  // ---- FLOW CONNECTIONS ----
+  // Login → Dashboard
+  const loginBtn = document.getElementById('loginBtn');
+  loginBtn.addEventListener('click', (e) => {
+    e.preventDefault();
+    loginBtn.style.transform = 'scale(0.96)';
+    setTimeout(() => loginBtn.style.transform = '', 120);
+    transitionTo('dashboard');
+  });
+
+  // Dashboard → Trust Score
+  attachTransition(document.getElementById('viewTrustScoreBtn'), 'trust');
+  // Trust Score → Insurance
+  attachTransition(document.getElementById('viewInsuranceFromTrustBtn'), 'insurance');
+  // Insurance → Accident Alert
+  attachTransition(document.getElementById('simulateAccidentBtn'), 'accident');
+  // Accident Alert → Loan Screen
+  attachTransition(document.getElementById('checkLoanEligibilityBtn'), 'loan');
+  // Loan Screen → Dashboard
+  attachTransition(document.getElementById('backToDashboardFromLoanBtn'), 'dashboard');
+  
+  // Extra micro-interaction for Apply Now (just demo alert)
+  const applyBtn = document.getElementById('applyLoanBtn');
+  if(applyBtn) {
+    applyBtn.addEventListener('click', (e) => {
+      e.preventDefault();
+      applyBtn.style.transform = 'scale(0.96)';
+      setTimeout(() => applyBtn.style.transform = '', 150);
+      alert("✨ Loan application initiated! (Demo) You'll receive funds shortly.");
+    });
+  }
+  
+  // Bottom Navigation logic
+  const navHome = document.querySelector('.nav-item[data-nav="home"]');
+  const navWallet = document.querySelector('.nav-item[data-nav="wallet"]');
+  const navInsuranceNav = document.querySelector('.nav-item[data-nav="insurance"]');
+  
+  if (navHome) {
+    navHome.addEventListener('click', () => {
+      navHome.style.transform = 'scale(0.95)';
+      setTimeout(() => navHome.style.transform = '', 100);
+      if (currentScreen !== 'dashboard') transitionTo('dashboard');
+    });
+  }
+  if (navWallet) {
+    navWallet.addEventListener('click', () => {
+      navWallet.style.transform = 'scale(0.95)';
+      setTimeout(() => navWallet.style.transform = '', 100);
+      // Wallet placeholder (toast message)
+      const toast = document.createElement('div');
+      toast.innerText = '💼 Wallet features coming soon for gig workers';
+      toast.style.position = 'absolute';
+      toast.style.bottom = '80px';
+      toast.style.left = '16px';
+      toast.style.right = '16px';
+      toast.style.background = '#0F172A';
+      toast.style.color = 'white';
+      toast.style.padding = '12px 16px';
+      toast.style.borderRadius = '40px';
+      toast.style.textAlign = 'center';
+      toast.style.fontSize = '13px';
+      toast.style.fontWeight = '500';
+      toast.style.zIndex = '1000';
+      toast.style.backdropFilter = 'blur(8px)';
+      document.getElementById('appContainer').appendChild(toast);
+      setTimeout(() => toast.remove(), 1800);
+    });
+  }
+  if (navInsuranceNav) {
+    navInsuranceNav.addEventListener('click', () => {
+      navInsuranceNav.style.transform = 'scale(0.95)';
+      setTimeout(() => navInsuranceNav.style.transform = '', 100);
+      if (currentScreen !== 'insurance') transitionTo('insurance');
+    });
+  }
+
+  // Sync nav active state on any transition (insurance or dashboard)
+  function syncNavAfterTransition() {
+    if (currentScreen === 'dashboard') {
+      document.querySelectorAll('.nav-item').forEach(i => i.classList.remove('active'));
+      document.querySelector('.nav-item[data-nav="home"]')?.classList.add('active');
+    } else if (currentScreen === 'insurance') {
+      document.querySelectorAll('.nav-item').forEach(i => i.classList.remove('active'));
+      document.querySelector('.nav-item[data-nav="insurance"]')?.classList.add('active');
+    } else {
+      // for trust, accident, loan — remove active highlights
+      document.querySelectorAll('.nav-item').forEach(i => i.classList.remove('active'));
+    }
+  }
+  
+  // Override transitionTo to also sync nav after each move
+  const originalTransition = transitionTo;
+  window.transitionTo = transitionTo;
+  transitionTo = function(newScreenId) {
+    originalTransition(newScreenId);
+    setTimeout(syncNavAfterTransition, 20);
+  };
+  // replace globally
+  window.transitionTo = transitionTo;
+  // rebind all attachTransition functions to use new transitionTo
+  // but we already attached using the closure, re-declare safe
+  // fix for any external calls: reattach all to be safe? Not needed.
+  
+  // manually reassign event listeners to ensure they use latest transition
+  function refreshButtonListeners() {
+    const btns = [
+      {btn: document.getElementById('viewTrustScoreBtn'), target: 'trust'},
+      {btn: document.getElementById('viewInsuranceFromTrustBtn'), target: 'insurance'},
+      {btn: document.getElementById('simulateAccidentBtn'), target: 'accident'},
+      {btn: document.getElementById('checkLoanEligibilityBtn'), target: 'loan'},
+      {btn: document.getElementById('backToDashboardFromLoanBtn'), target: 'dashboard'}
+    ];
+    btns.forEach(({btn, target}) => {
+      if(btn) {
+        const newBtn = btn.cloneNode(true);
+        btn.parentNode?.replaceChild(newBtn, btn);
+        newBtn.addEventListener('click', (e) => {
+          e.preventDefault();
+          newBtn.style.transform = 'scale(0.96)';
+          setTimeout(() => newBtn.style.transform = '', 120);
+          transitionTo(target);
+        });
+        if(target === 'trust') document.getElementById('viewTrustScoreBtn');
+        else if(target === 'insurance') document.getElementById('viewInsuranceFromTrustBtn');
+        else if(target === 'accident') document.getElementById('simulateAccidentBtn');
+        else if(target === 'loan') document.getElementById('checkLoanEligibilityBtn');
+        else if(target === 'dashboard') document.getElementById('backToDashboardFromLoanBtn');
+      }
+    });
+    // relogin btn fresh
+    const newLogin = document.getElementById('loginBtn');
+    if(newLogin){
+      const cloneLogin = newLogin.cloneNode(true);
+      newLogin.parentNode?.replaceChild(cloneLogin, newLogin);
+      cloneLogin.addEventListener('click', (e) => {
+        e.preventDefault();
+        cloneLogin.style.transform = 'scale(0.96)';
+        setTimeout(() => cloneLogin.style.transform = '', 120);
+        transitionTo('dashboard');
+      });
+    }
+  }
+  refreshButtonListeners();
+  // also fix circular progress
+  function updateProgress() {
+    const circle = document.querySelector('.circular-progress');
+    if(circle) circle.style.background = `conic-gradient(#2563EB 0deg 280.8deg, #E2E8F0 280.8deg 360deg)`;
+  }
+  updateProgress();
+  
+  // initial active state
+  syncNavAfterTransition();
+  // ensure bottomNav hidden at start
+  if(currentScreen === 'login') bottomNav.style.display = 'none';
+  else bottomNav.style.display = 'flex';
+  
+  console.log("TrustPay prototype ready — responsive & frame-friendly");
+</script>
+</body>
+</html>
